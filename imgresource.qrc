@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/qt-logo.png</file>
+        <file>images/delta.gif</file>
+        <file>images/DeltaBind-Icon1.png</file>
+        <file>images/Deltas.svg.png</file>
+    </qresource>
+</RCC>
