@@ -13,16 +13,19 @@ public:
     explicit ViewArea(QWidget *parent = 0);
 
     int getK();
-    int getB();
+    int getBx();
+    int getBy();
 
     QVector<QLine> getLinesList();
 
 public slots:
     void setK(const int&);
-    void setB(const int&);
+    void setBx(const int&);
+    void setBy(const int&);
 
     void addNewLine(const QPoint&, const QPoint&);
-    void drawNewLine(const int& K, const int& B);
+    void addPrmLine();
+    void drawParametricLine();
 
 ///signals block
 signals:
@@ -32,11 +35,18 @@ signals:
 ///private block
 private:
     virtual void paintEvent(QPaintEvent *);
+    void mousePressEvent(QMouseEvent *e);
 //    virtual void resizeEvent(QResizeEvent *);
+
+    //TODO:
+    //set point with mouse click
+    //move viewarea with mouse click
 
     void setArea(QPainter &qp);
     void drawCoordinates(QPainter &qp);
     void fillArea(QPainter &qp);
+
+    QPainter qp;
 
     QPen penAxes;
     QPoint pntStart;
@@ -47,17 +57,17 @@ private:
 
     QLine oX;
     QLine oY;
-    QRect xBoundingRect;
-    QRect yBoundingRect;
+    QRect textRect;
 
-    int B;
+    int Bx;
+    int By;
     int K;
 
     QVector<QLine> vecLines;
 
+    bool modify;
 
 private slots:
-
 
 };
 

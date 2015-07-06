@@ -5,7 +5,6 @@
 
 #include <QMainWindow>
 
-
 namespace Ui {
     class MainWindow;
 }
@@ -22,18 +21,12 @@ public:
     QPoint getPointStart(QPoint pStart);
     QPoint getPointEnd(QPoint pEnd);
 
-
-
 public slots:
 
 ///signals block
 signals:
 
 ///protected block
-
-
-
-
 
 ///private block
 private:
@@ -50,14 +43,9 @@ private:
     QPoint pntStart;
     QPoint pntEnd;
 
-    int K;
-    int B;
-
 private slots:
     void addLine();
-//    void setPointEnd();
-
-
+    void resetPBlock();
 };
 
 #endif // MAINWINDOW_H

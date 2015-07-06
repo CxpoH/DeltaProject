@@ -7,20 +7,16 @@
 ViewArea::ViewArea(QWidget *parent)
     : QWidget(parent)
 {
-    QFont newFont = font();
-    newFont.setPixelSize(12);
-    setFont(newFont);
-
-    QFontMetrics fontMetrics(newFont);
-    xBoundingRect = fontMetrics.boundingRect(tr("x"));
-    yBoundingRect = fontMetrics.boundingRect(tr("y"));
+    K = 45; //K - in degrees. diagonal line. K = 1.
+    By = 0; //B - offset, B>0 Up, B<0 Down.
+    Bx = 0; //B - offset, B>0 Right, B<0 Left.
+    modify = false;
 }
 
 void ViewArea::paintEvent(QPaintEvent *)
 {
-    QPainter qp;
-    qp.setRenderHint(QPainter::Antialiasing);
     qp.begin(this);
+    qp.setRenderHint(QPainter::Antialiasing);
 
     setArea(qp);
     drawCoordinates(qp);
@@ -29,18 +25,20 @@ void ViewArea::paintEvent(QPaintEvent *)
     qp.end();
 }
 
+void ViewArea::mousePressEvent(QMouseEvent *e)
+{
+    pntStart = QPoint();
+
+//    int k = floor(e->y()/cellHeight)+1;
+//    int j = floor(e->x()/cellWidth)+1;
+
+    update();
+}
+
 void ViewArea::setArea(QPainter &qp)
 {
     pntZero = QPoint(this->width()/2, this->height()/2);
-    qp.translate(pntZero);
-//    qp.scale(1, -1);
-}
-
-void ViewArea::fillArea(QPainter &qp)
-{
-
-    qp.drawLines(vecLines);
-
+    qp.translate(pntZero); //set 0,0 in center widget
 }
 
 void ViewArea::drawCoordinates(QPainter &qp)
@@ -50,28 +48,45 @@ void ViewArea::drawCoordinates(QPainter &qp)
     oX = QLine(-(this->width()/2), 0, this->width()/2, 0);
     oY = QLine(0, this->height()/2, 0, -(this->height()/2));
 
+    QFont newFont = font();
+    newFont.setPixelSize(12);
+    setFont(newFont);
+
+    QFontMetrics fontMetrics(newFont);
+    textRect = fontMetrics.boundingRect(tr("XXX"));
+
     qp.drawLine(oX);
-//    qp.drawLine(48, -2, 50, 0);
-//    qp.drawLine(48, 2, 50, 0);
-    qp.drawText(60 - xBoundingRect.width() / 2,
-                0 + xBoundingRect.height() / 2, tr("oX"));
+    qp.drawText(this->width()/2 - textRect.width() - 10
+                , 0 + textRect.height()/2 + 5
+                , tr("oX"));
 
     qp.drawLine(oY);
-//    qp.drawLine(-2, 48, 0, 50);
-//    qp.drawLine(2, 48, 0, 50);
-    qp.drawText(0 - yBoundingRect.width() / 2,
-                60 + yBoundingRect.height() / 2, tr("oY"));
+    qp.drawText(5
+                , this->height()/2 - textRect.height() - 10
+                , tr("oY"));
 }
 
-
-int ViewArea::getB()
+void ViewArea::fillArea(QPainter &qp)
 {
-    return B;
+    qp.drawLines(vecLines);
+
+    if (!pntStart.isNull() && !pntEnd.isNull())
+    {
+        qp.save();
+        qp.setPen(Qt::red);
+        qp.drawLine(pntStart, pntEnd);
+        qp.restore();
+    }
 }
 
-void  ViewArea::setB(const int& b)
+int ViewArea::getBx()
 {
-    B = b;
+    return Bx;
+}
+
+int ViewArea::getBy()
+{
+    return By;
 }
 
 int ViewArea::getK()
@@ -79,15 +94,37 @@ int ViewArea::getK()
     return K;
 }
 
+void  ViewArea::setBx(const int& b)
+{
+    Bx = b;
+    drawParametricLine(); //TODO: remove to another method
+}
+
+void  ViewArea::setBy(const int& b)
+{
+    By = b;
+    drawParametricLine(); //TODO: remove to another method
+}
+
 void  ViewArea::setK(const int& k)
 {
     K = k;
+    drawParametricLine(); //TODO: remove to another method
 }
 
-void ViewArea::addNewLine(const QPoint& pntStart, const QPoint& pntEnd)
+void ViewArea::addNewLine(const QPoint& pntS, const QPoint& pntE)
 {
-    vecLines.append(QLine(pntStart, pntEnd));
+    vecLines.append(QLine(pntS, pntE));
+    update();
+}
 
+void ViewArea::addPrmLine()
+{
+    if (modify)
+    {
+        vecLines.append(QLine(pntStart, pntEnd));
+        modify = false;
+    }
     update();
 }
 
@@ -96,32 +133,57 @@ QVector<QLine> ViewArea::getLinesList()
     return vecLines;
 }
 
-void ViewArea::drawNewLine(const int &K, const int &B)
+void ViewArea::drawParametricLine()
 {
-    int x, y;
-    if (k != 90 && K != 180)
+    modify = true;
+    int Xs, Ys, Xe, Ye;
+
+    float k; //k - numeric coefficient, K - angle in radian
+    k = tan(double(K * M_PI/180));
+
+    switch (K)
     {
-    if ( && tan(double(K)) > 0)
-    {
+        case 90:
+            Xs = Xe = Bx;
+            Ys = -1* (this->height()/2);
+            Ye = this->height()/2;
+            pntStart = QPoint(Xs, Ys);
+            pntEnd = QPoint(Xe, Ye);
+            update();
+            break;
 
-        if ( y < abs(this->height()/2) )
-        {
-            y = this->width()/2 * K + B; //x = this->width()/2
+        case 0:
+        case 180:
+            Xs = -1* (this->width()/2);
+            Xe = this->width()/2;
+            Ys = Ye = By * -1;
+            pntStart = QPoint(Xs, Ys);
+            pntEnd = QPoint(Xe, Ye);
+            update();
+            break;
 
-        }
-        else
-        {
-            x = (this->height()/2 - B)/K;
+        default:
+            if (k  > 0)
+            {
+                Xs = (this->width()/2) * -1; //- width()/2 left
+                Ys = ((int)(k * Xs) + By) * -1; //+ height()/2 down
+                pntStart = QPoint(Xs, Ys);
 
-        }
-    }
-        else
-        {
+                Xe = this->width()/2; //- width()/2 right
+                Ye = ((int)(k * Xe) + By) * -1; //+ height()/2 up
+                pntEnd = QPoint(Xe, Ye);
+            }
+            else
+            {
+                Xs = (this->width()/2); //- width()/2 left
+                Ys = ((int)(k * Xs) + By) * -1; //+ height()/2 down
+                pntStart = QPoint(Xs, Ys);
 
-        }
-
-    if (B)
-    {
-
+                Xe = (this->width()/2) * -1 ; //- width()/2 right
+                Ye = ((int)(k * Xe) + By) * -1; //+ height()/2 up
+                pntEnd = QPoint(Xe, Ye);
+            }
+            update();
+            break;
     }
 }
