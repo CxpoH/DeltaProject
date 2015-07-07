@@ -11,6 +11,10 @@ ViewArea::ViewArea(QWidget *parent)
     By = 0; //B - offset, B>0 Up, B<0 Down.
     Bx = 0; //B - offset, B>0 Right, B<0 Left.
     modify = false;
+    strStatus = "X= ; Y= ";
+
+    setMouseTracking(true);
+
 }
 
 void ViewArea::paintEvent(QPaintEvent *)
@@ -21,18 +25,42 @@ void ViewArea::paintEvent(QPaintEvent *)
     setArea(qp);
     drawCoordinates(qp);
     fillArea(qp);
+    setPoint(qp);
 
     qp.end();
 }
 
-void ViewArea::mousePressEvent(QMouseEvent *e)
+void ViewArea::mousePressEvent(QMouseEvent *pEvent)
 {
-    pntStart = QPoint();
-
-//    int k = floor(e->y()/cellHeight)+1;
-//    int j = floor(e->x()/cellWidth)+1;
+    prevClick = crntClick;
+    crntClick = QPoint(pEvent->x()-this->width()/2, pEvent->y()-this->height()/2);
+//    int k = floor(pEvent->y());
+//    int j = floor(pEvent->x());
 
     update();
+}
+
+void ViewArea::mouseMoveEvent(QMouseEvent* pEvent)
+{
+     strStatus = "X= " + QString().setNum(pEvent->x()-this->width()/2) + "; "
+                  + "Y= " + QString().setNum(pEvent->y()-this->height()/2) + ";";
+
+     emit pntSet();
+}
+
+//void ViewArea::enterEvent(QMouseEvent *pEvent)
+//{
+
+//}
+
+//void ViewArea::leaveEvent(QMouseEvent *pEvent)
+//{
+
+//}
+
+QString ViewArea::getStrStatus()
+{
+    return strStatus;
 }
 
 void ViewArea::setArea(QPainter &qp)
@@ -53,28 +81,49 @@ void ViewArea::drawCoordinates(QPainter &qp)
     setFont(newFont);
 
     QFontMetrics fontMetrics(newFont);
-    textRect = fontMetrics.boundingRect(tr("XXX"));
+    rectAxesText = fontMetrics.boundingRect(tr("XXX"));
 
     qp.drawLine(oX);
-    qp.drawText(this->width()/2 - textRect.width() - 10
-                , 0 + textRect.height()/2 + 5
+    qp.drawText(this->width()/2 - rectAxesText.width() - 10
+                , 0 + rectAxesText.height()/2 + 5
                 , tr("oX"));
 
     qp.drawLine(oY);
     qp.drawText(5
-                , this->height()/2 - textRect.height() - 10
+                , this->height()/2 - rectAxesText.height() - 10
                 , tr("oY"));
 }
 
 void ViewArea::fillArea(QPainter &qp)
 {
-    qp.drawLines(vecLines);
+    if (!vecLines.isEmpty())
+        qp.drawLines(vecLines);
+
+    if (!vecPoints.isEmpty())
+        qp.drawLines(vecPoints);
+
 
     if (!pntStart.isNull() && !pntEnd.isNull())
     {
         qp.save();
-        qp.setPen(Qt::red);
+        qp.setPen(QPen(Qt::red, 3));
         qp.drawLine(pntStart, pntEnd);
+        qp.restore();
+    }
+}
+
+void ViewArea::setPoint(QPainter &qp)
+{
+
+    if(!crntClick.isNull())
+    {
+        qp.save();
+        qp.setPen(QPen(Qt::blue, 5));
+        if (!prevClick.isNull())
+            qp.drawPoint(prevClick);
+        qp.drawPoint(crntClick);
+        vecPoints.append(crntClick);
+
         qp.restore();
     }
 }
@@ -118,7 +167,7 @@ void ViewArea::addNewLine(const QPoint& pntS, const QPoint& pntE)
     update();
 }
 
-void ViewArea::addPrmLine()
+void ViewArea::addParametricLine()
 {
     if (modify)
     {
@@ -187,3 +236,15 @@ void ViewArea::drawParametricLine()
             break;
     }
 }
+
+//void ViewArea::fillPointLines()
+//{
+//    vecPoints.append();
+//    update();
+
+//}
+
+//void ViewArea::drawCanvasLine()
+//{
+//    //TODO: draw Canvas for Line which selected
+//}

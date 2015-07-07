@@ -62,6 +62,14 @@ void MainWindow::initConnect()
 
     ///Point block
     connect(ui->btnPntAddLine, SIGNAL(clicked()), this, SLOT(addLine()));
+
+    ///ViewWGT block
+    connect(viewwgt, SIGNAL(pntSet()), this ,SLOT(setStrPoint()));
+}
+
+void MainWindow::setStrPoint()
+{
+    ui->statusbar->showMessage(viewwgt->getStrStatus());
 }
 
 void MainWindow::addLine()

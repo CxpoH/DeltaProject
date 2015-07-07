@@ -3,6 +3,7 @@
 
 #include <QPainter>
 #include <QWidget>
+#include <QMouseEvent>
 
 class ViewArea : public QWidget
 {
@@ -16,6 +17,8 @@ public:
     int getBx();
     int getBy();
 
+    QString getStrStatus();
+
     QVector<QLine> getLinesList();
 
 public slots:
@@ -24,51 +27,62 @@ public slots:
     void setBy(const int&);
 
     void addNewLine(const QPoint&, const QPoint&);
-    void addPrmLine();
+    void addParametricLine();
     void drawParametricLine();
 
 ///signals block
 signals:
+    void pntSet();
 
 ///protected block
 
-///private block
-private:
+    ///private block
+protected:
+    //TODO: set point with mouse click
     virtual void paintEvent(QPaintEvent *);
-    void mousePressEvent(QMouseEvent *e);
-//    virtual void resizeEvent(QResizeEvent *);
+    virtual void mousePressEvent(QMouseEvent *event);
+    virtual void mouseMoveEvent(QMouseEvent *pEvent);
 
-    //TODO:
-    //set point with mouse click
-    //move viewarea with mouse click
+//    virtual void enterEvent(QMouseEvent * pEvent);
+//    virtual void leaveEvent(QMouseEvent * pEvent);
+    //    virtual void resizeEvent(QResizeEvent *);
+
+private:
+
+    //TODO: move viewarea with mouse click
 
     void setArea(QPainter &qp);
     void drawCoordinates(QPainter &qp);
     void fillArea(QPainter &qp);
+    void setPoint(QPainter &qp);
+//    void drawCanvasLine(QPainter &qp);
+//    void drawPointLines(QPainter &qp);
 
     QPainter qp;
-
     QPen penAxes;
-    QPoint pntStart;
-    QPoint pntEnd;
 
-    QPoint pntCenter;
-    QPoint pntZero;
+    QPoint pntStart, pntEnd;
+    QPoint pntCenter, pntZero;
+    QPoint pntClick;
+    QPoint prevClick, crntClick;
 
-    QLine oX;
-    QLine oY;
-    QRect textRect;
+    QLine oX,oY;
+    QRect rectAxesText;
+    QRect rectStatus;
 
-    int Bx;
-    int By;
-    int K;
+    int K, Bx, By;
+
+    QString strStatus;
 
     QVector<QLine> vecLines;
+    QVector<QPoint> vecPoints;
+
+//    void QPainter::drawLines ( const QVector<QPoint>& pointPairs )
 
     bool modify;
+
 
 private slots:
 
 };
-
 #endif // DRAWAREA_H

@@ -22,6 +22,7 @@ public:
     QPoint getPointEnd(QPoint pEnd);
 
 public slots:
+    void setStrPoint();
 
 ///signals block
 signals:

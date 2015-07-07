@@ -13,11 +13,15 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     mainwindow.cpp \
-    viewarea.cpp
+    viewarea.cpp \
+    amount.cpp \
+    viewtable.cpp
 
 HEADERS  += \
     mainwindow.h \
-    viewarea.h
+    viewarea.h \
+    amount.h \
+    viewtable.h
 
 FORMS    += \
     mainwindow.ui
